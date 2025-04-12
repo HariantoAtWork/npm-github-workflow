@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- You can read @.github/workflows folder here
+- This is NPM rollup with Github Workflow template
