@@ -2,6 +2,7 @@
 	"name": "your-package-name",
 	"version": "0.0.1",
 	"type": "module",
+	"packageManager": "pnpm@10.0.0",
 	"description": "Your package description",
 	"main": "dist/umd/index.js",
 	"module": "dist/esm/index.js",
