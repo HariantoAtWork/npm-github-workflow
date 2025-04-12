@@ -1,10 +1,37 @@
 {
+	"name": "your-package-name",
 	"version": "0.0.1",
 	"type": "module",
+	"description": "Your package description",
+	"main": "dist/umd/index.js",
+	"module": "dist/esm/index.js",
+	"types": "dist/types/index.d.ts",
+	"files": [
+		"dist",
+		"README.md"
+	],
+	"scripts": {
+		"build": "rollup -c",
+		"dev": "rollup -c -w",
+		"clean": "rimraf dist",
+		"prepublishOnly": "npm run clean && npm run build"
+	},
+	"keywords": [],
+	"author": "Harianto van Insulinde",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/HariantoAtWork/npm-github-workflow.git"
+	},
+	"bugs": {
+		"url": "https://github.com/HariantoAtWork/npm-github-workflow/issues"
+	},
+	"homepage": "https://github.com/HariantoAtWork/npm-github-workflow#readme",
 	"devDependencies": {
 		"rollup": "^4.40.0",
 		"@rollup/plugin-commonjs": "^28.0.3",
 		"@rollup/plugin-node-resolve": "^16.0.1",
-		"@rollup/plugin-terser": "^0.4.4"
+		"@rollup/plugin-terser": "^0.4.4",
+		"rimraf": "^5.0.5"
 	}
 }
