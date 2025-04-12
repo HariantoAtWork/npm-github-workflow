@@ -21,7 +21,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Check if commit is a version number
+        id: check_commit
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          if [[ "$COMMIT_MSG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Commit message is a version number: $COMMIT_MSG"
+            echo "IS_VERSION_NUMBER=true" >> "$GITHUB_ENV"
+          else
+            echo "Commit message is not a version number: $COMMIT_MSG"
+            echo "IS_VERSION_NUMBER=false" >> "$GITHUB_ENV"
+          fi
+
       - name: Check if version changed
+        if: env.IS_VERSION_NUMBER == 'true'
         id: check_version
         run: |
           # Get the current version
@@ -41,7 +54,7 @@ jobs:
           fi
 
       - name: Check if tag exists
-        if: env.VERSION_CHANGED == 'true'
+        if: env.IS_VERSION_NUMBER == 'true' && env.VERSION_CHANGED == 'true'
         id: check_tag
         run: |
           if git rev-parse "v${CURRENT_VERSION}" >/dev/null 2>&1; then
@@ -52,7 +65,7 @@ jobs:
           fi
 
       - name: Create tag
-        if: env.VERSION_CHANGED == 'true' && env.EXISTS == 'false'
+        if: env.IS_VERSION_NUMBER == 'true' && env.VERSION_CHANGED == 'true' && env.EXISTS == 'false'
         run: |
           git tag v${CURRENT_VERSION}
           git push origin v${CURRENT_VERSION}
