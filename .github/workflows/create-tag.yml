@@ -43,7 +43,7 @@ jobs:
           git tag "v${{ steps.commit.outputs.commit_message }}"
           git push origin "v${{ steps.commit.outputs.commit_message }}"
 
-  trigger-build:
+  trigger-build-and-publish:
     needs: create-tag
     if: needs.create-tag.outputs.tag_created == 'true'
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/publish.yml
