@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      build_success: ${{ steps.build_result.outputs.success }}
 
     steps:
       - uses: actions/checkout@v4
@@ -40,8 +42,12 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        id: build_result
+        run: |
+          pnpm build
+          echo "success=true" >> $GITHUB_OUTPUT
 
-      # Optional: add test step here if needed
-      # - name: Run tests
-      #   run: pnpm test
+  trigger-publish:
+    needs: build
+    if: needs.build.outputs.build_success == 'true'
+    uses: ./.github/workflows/publish.yml
