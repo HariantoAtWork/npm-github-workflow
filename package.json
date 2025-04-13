@@ -1,6 +1,5 @@
 {
 	"name": "your-package-name",
-	"version": "0.0.5",
 	"type": "module",
 	"packageManager": "pnpm@10.0.0",
 	"description": "Your package description",
