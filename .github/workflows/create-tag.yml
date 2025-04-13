@@ -38,5 +38,5 @@ jobs:
       - name: Create tag
         if: steps.check_version.outputs.is_version == 'true'
         run: |
-          git tag ${{ steps.commit.outputs.commit_message }}
-          git push origin ${{ steps.commit.outputs.commit_message }}
+          git tag "v${{ steps.commit.outputs.commit_message }}"
+          git push origin "v${{ steps.commit.outputs.commit_message }}"
