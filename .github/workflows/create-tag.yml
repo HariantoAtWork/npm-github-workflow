@@ -11,6 +11,8 @@ permissions:
 jobs:
   create-tag:
     runs-on: ubuntu-latest
+    outputs:
+      tag_created: ${{ steps.check_version.outputs.is_version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -40,3 +42,8 @@ jobs:
         run: |
           git tag "v${{ steps.commit.outputs.commit_message }}"
           git push origin "v${{ steps.commit.outputs.commit_message }}"
+
+  trigger-build:
+    needs: create-tag
+    if: needs.create-tag.outputs.tag_created == 'true'
+    uses: ./.github/workflows/build.yml
