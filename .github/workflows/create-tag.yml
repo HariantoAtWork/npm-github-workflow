@@ -9,8 +9,7 @@ on:
 
 permissions:
   contents: write
-  # packages: write
-  # pull-requests: write
+
 
 jobs:
   tag:
@@ -37,12 +36,16 @@ jobs:
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%B)
           echo "Checking commit message: '$COMMIT_MSG'"
-          if [[ "$COMMIT_MSG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+          
+          # Strict version number check - must be exactly like 1.0.0, 0.1.2, etc.
+          if [[ "$COMMIT_MSG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Commit message is a version number: $COMMIT_MSG"
             echo "IS_VERSION_NUMBER=true" >> "$GITHUB_ENV"
           else
             echo "Commit message is not a version number: $COMMIT_MSG"
             echo "IS_VERSION_NUMBER=false" >> "$GITHUB_ENV"
+            # Exit early if not a version number
+            exit 0
           fi
 
       - name: Debug - Print package.json
@@ -70,6 +73,8 @@ jobs:
           else
             echo "No version change detected"
             echo "VERSION_CHANGED=false" >> "$GITHUB_ENV"
+            # Exit early if version hasn't changed
+            exit 0
           fi
 
       - name: Check if tag exists
@@ -80,6 +85,8 @@ jobs:
           if git rev-parse "v${CURRENT_VERSION}" >/dev/null 2>&1; then
             echo "Tag v${CURRENT_VERSION} already exists."
             echo "EXISTS=true" >> "$GITHUB_ENV"
+            # Exit early if tag already exists
+            exit 0
           else
             echo "Tag v${CURRENT_VERSION} does not exist."
             echo "EXISTS=false" >> "$GITHUB_ENV"
