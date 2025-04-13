@@ -73,7 +73,7 @@ jobs:
       - name: Create tag
         if: env.IS_VERSION_NUMBER == 'true' && env.VERSION_CHANGED == 'true' && env.EXISTS == 'false'
         run: |
-          git tag v${CURRENT_VERSION}
-          git push origin v${CURRENT_VERSION}
+          git tag "v${CURRENT_VERSION}"
+          git push origin "v${CURRENT_VERSION}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
