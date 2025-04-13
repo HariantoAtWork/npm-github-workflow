@@ -14,7 +14,10 @@
 		"build": "rollup -c",
 		"dev": "rollup -c -w",
 		"clean": "rimraf dist",
-		"prepublishOnly": "npm run clean && npm run build"
+		"prepublishOnly": "npm run clean && npm run build",
+		"v-patch": "pnpm version patch && git push",
+		"v-minor": "pnpm version minor && git push",
+		"v-major": "pnpm version major && git push"
 	},
 	"keywords": [],
 	"author": "Harianto van Insulinde",
