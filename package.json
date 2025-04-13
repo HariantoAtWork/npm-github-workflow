@@ -1,5 +1,5 @@
 {
-	"name": "your-package-name",
+	"name": "npm-github-workflow",
 	"type": "module",
 	"packageManager": "pnpm@10.0.0",
 	"description": "Your package description",
