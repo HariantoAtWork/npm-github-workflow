@@ -4,107 +4,36 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'package.json'
-
-permissions:
-  contents: write
-
 
 jobs:
-  tag:
+  create-tag:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Debug - Print commit message
-        run: |
-          echo "Commit message: $(git log -1 --pretty=%B)"
-          echo "Commit hash: $(git rev-parse HEAD)"
-
-      - name: Check if commit is a version number
-        id: check_commit
+      - name: Get commit message
+        id: commit
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "Checking commit message: '$COMMIT_MSG'"
-          
-          # Strict version number check - must be exactly like 1.0.0, 0.1.2, etc.
-          if [[ "$COMMIT_MSG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Commit message is a version number: $COMMIT_MSG"
-            echo "IS_VERSION_NUMBER=true" >> "$GITHUB_ENV"
-          else
-            echo "Commit message is not a version number: $COMMIT_MSG"
-            echo "IS_VERSION_NUMBER=false" >> "$GITHUB_ENV"
-            # Exit early if not a version number
-            exit 0
-          fi
+          echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "Commit message: $COMMIT_MSG"
 
-      - name: Debug - Print package.json
-        run: |
-          echo "Current package.json:"
-          cat package.json
-
-      - name: Check if version changed
-        if: env.IS_VERSION_NUMBER == 'true'
+      - name: Check if commit message is a version number
         id: check_version
         run: |
-          # Get the current version
-          CURRENT_VERSION=$(node -p 'require("./package.json").version')
-          echo "Current version: $CURRENT_VERSION"
-          
-          # Get the previous version from the last commit
-          git checkout HEAD^ package.json || true
-          PREVIOUS_VERSION=$(node -p 'require("./package.json").version' || echo "none")
-          echo "Previous version: $PREVIOUS_VERSION"
-          git checkout HEAD package.json
-          
-          if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
-            echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
-            echo "VERSION_CHANGED=true" >> "$GITHUB_ENV"
+          if [[ "${{ steps.commit.outputs.commit_message }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "is_version=true" >> $GITHUB_OUTPUT
+            echo "Commit message is a version number"
           else
-            echo "No version change detected"
-            echo "VERSION_CHANGED=false" >> "$GITHUB_ENV"
-            # Exit early if version hasn't changed
-            exit 0
+            echo "is_version=false" >> $GITHUB_OUTPUT
+            echo "Commit message is not a version number"
           fi
-
-      - name: Check if tag exists
-        if: env.IS_VERSION_NUMBER == 'true' && env.VERSION_CHANGED == 'true'
-        id: check_tag
-        run: |
-          echo "Checking if tag v${CURRENT_VERSION} exists..."
-          if git rev-parse "v${CURRENT_VERSION}" >/dev/null 2>&1; then
-            echo "Tag v${CURRENT_VERSION} already exists."
-            echo "EXISTS=true" >> "$GITHUB_ENV"
-            # Exit early if tag already exists
-            exit 0
-          else
-            echo "Tag v${CURRENT_VERSION} does not exist."
-            echo "EXISTS=false" >> "$GITHUB_ENV"
-          fi
-
-      - name: Debug - Print environment variables
-        run: |
-          echo "IS_VERSION_NUMBER: $IS_VERSION_NUMBER"
-          echo "VERSION_CHANGED: $VERSION_CHANGED"
-          echo "EXISTS: $EXISTS"
-          echo "CURRENT_VERSION: $CURRENT_VERSION"
 
       - name: Create tag
-        if: env.IS_VERSION_NUMBER == 'true' && env.VERSION_CHANGED == 'true' && env.EXISTS == 'false'
+        if: steps.check_version.outputs.is_version == 'true'
         run: |
-          echo "Creating tag v${CURRENT_VERSION}..."
-          git tag "v${CURRENT_VERSION}"
-          echo "Pushing tag v${CURRENT_VERSION}..."
-          git push origin "v${CURRENT_VERSION}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git tag ${{ steps.commit.outputs.commit_message }}
+          git push origin ${{ steps.commit.outputs.commit_message }}
